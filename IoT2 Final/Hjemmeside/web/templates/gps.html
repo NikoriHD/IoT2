@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPS Data Map</title>
+    <!-- Include Leaflet.js library -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <style>
+        textarea {
+            width: 100%;
+            height: 200px;
+        }
+        .navbar {
+            overflow: hidden;
+            background-color: #333;
+        }
+        .navbar a {
+            float: left;
+            display: block;
+            color: #f2f2f2;
+            text-align: center;
+            padding: 14px 20px;
+            text-decoration: none;
+        }
+        .navbar a:hover {
+            background-color: #ddd;
+            color: black;
+        }
+        #map {
+            height: 400px;
+        }
+        #back-button {
+            margin-top: 10px;
+        }
+        #coordinates {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <a href="/">Home</a>
+        <a href="/temperature">Temperature</a>
+        <a href="/humidity">Humidity</a>
+        <a href="/gps">GPS</a>
+    </div>
+    <div id="map"></div>
+
+    <div id="coordinates">Latitude: <span id="latitude"></span>, Longitude: <span id="longitude"></span></div>
+
+    <script>
+       
+        var map = L.map('map').setView([0, 0], 2); 
+
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+       
+        function fetchAndPlotGPSData() {
+            fetch('/fetch_gps_data')
+                .then(response => response.json())
+                .then(data => {
+                    
+                    const filteredData = data.filter(entry => entry !== null);
+
+                    
+                    filteredData.forEach(entry => {
+                        var marker = L.marker([entry[0], entry[1]]).addTo(map);
+                    });
+
+                    
+                    if (filteredData.length > 0) {
+                        document.getElementById('latitude').innerText = filteredData[0][0];
+                        document.getElementById('longitude').innerText = filteredData[0][1];
+                    }
+                })
+                .catch(error => console.error('Error fetching GPS data:', error));
+        }
+
+        
+        document.addEventListener('DOMContentLoaded', fetchAndPlotGPSData);
+    </script>
+</body>
+</html>
